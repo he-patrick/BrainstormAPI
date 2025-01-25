@@ -70,7 +70,9 @@ export class GraphManager {
 
     if (type === RelationType.PARENT_CHILD) {
       const targetNode = this.nodes.get(target);
+      const sourceNode = this.nodes.get(source);
       targetNode.parentId = source;
+      sourceNode.children.add(target);
       this.rootNodes.delete(target);
       this.updateSubtreeLevels(target);
     }

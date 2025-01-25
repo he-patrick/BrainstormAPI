@@ -111,7 +111,7 @@ export class VisualizationManager {
             </div>
             <hr style="margin: 10px 0; border: none; border-top: 1px solid #eee;">
             <p><strong>Level:</strong> ${node.level}</p>
-            <p><strong>Priority:</strong> ${node.priority}</p>
+            <p><strong>Children:</strong> ${Array.from(node.children).length}</p>
         `;
     }
 

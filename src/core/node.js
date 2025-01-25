@@ -5,7 +5,6 @@ export class Node {
         description = '',
         parentId = null,
         level = 0,
-        priority = 1,
         sessionId = null
     }) {
         this.id = id || uuidv4();
@@ -13,8 +12,8 @@ export class Node {
         this.description = description;
         this.parentId = parentId;
         this.level = level;
-        this.priority = priority;
         this.sessionId = sessionId;
+        this.children = new Set();
     }
 
     update(updates) {
@@ -27,19 +26,20 @@ export class Node {
             label: this.label,
             level: this.level,
             color: color,
-            size: this.priority * 5
+            size: 30
         };
     }
 
     clone() {
-        return new Node({
+        const cloned = new Node({
             id: this.id,
             label: this.label,
             description: this.description,
             parentId: this.parentId,
             level: this.level,
-            priority: this.priority,
             sessionId: this.sessionId
         });
+        this.children.forEach(childId => cloned.children.add(childId));
+        return cloned;
     }
 }
