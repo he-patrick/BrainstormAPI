@@ -1,23 +1,17 @@
 export class Node {
     constructor({
-        id = null,
+        id,
         label,
         description = '',
         parentId = null,
-        level = 0,
-        sessionId = null
+        level = 0
     }) {
-        this.id = id || uuidv4();
+        this.id = id;
         this.label = label;
         this.description = description;
         this.parentId = parentId;
         this.level = level;
-        this.sessionId = sessionId;
         this.children = new Set();
-    }
-
-    update(updates) {
-        Object.assign(this, updates);
     }
 
     toVisNetworkFormat(color) {
@@ -28,18 +22,5 @@ export class Node {
             color: color,
             size: 30
         };
-    }
-
-    clone() {
-        const cloned = new Node({
-            id: this.id,
-            label: this.label,
-            description: this.description,
-            parentId: this.parentId,
-            level: this.level,
-            sessionId: this.sessionId
-        });
-        this.children.forEach(childId => cloned.children.add(childId));
-        return cloned;
     }
 }

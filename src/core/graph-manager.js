@@ -37,35 +37,74 @@ export class GraphManager {
     }
   }
 
-  addNode(nodeData) {
-    const node = new Node(nodeData);
+  constructFromJSON(data) {
+    // Validation
+    if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+      throw new Error('Invalid JSON structure');
+    }
     
-    if (node.parentId) {
-      node.level = this.calculateLevel(node.id);
+    // Verify node with ID 1 exists and is present
+    const rootNode = data.nodes.find(node => node.id === 1);
+    if (!rootNode) {
+      throw new Error('Root node (ID: 1) is required');
     }
 
+    // Clear existing data
+    this.nodes.clear();
+    this.edges.clear();
+    this.rootNodes.clear();
+
+    // Create nodes
+    data.nodes.forEach(nodeData => {
+      if (!nodeData.id || !nodeData.label) {
+        throw new Error('Node missing required fields');
+      }
+      // For root node (ID: 1), ensure parentId is null
+      if (nodeData.id === 1) {
+        nodeData.parentId = null;
+        nodeData.level = 0;
+      }
+      this.addNode(nodeData);
+    });
+
+    // Create edges
+    data.edges.forEach(edgeData => {
+      if (!edgeData.source || !edgeData.destination) {
+        throw new Error('Edge missing required fields');
+      }
+      if (!this.nodes.has(edgeData.source) || !this.nodes.has(edgeData.destination)) {
+        throw new Error('Edge references non-existent node');
+      }
+      this.addEdge(edgeData.source, edgeData.destination);
+    });
+
+    // Only need to update levels starting from root
+    this.updateSubtreeLevels(1);
+  }
+
+  addNode(nodeData) {
+    const node = new Node(nodeData);
     this.nodes.set(node.id, node);
     if (!node.parentId) {
       this.rootNodes.add(node.id);
     }
-
     return node;
   }
 
-  addEdge(source, target) {
-    if (!this.nodes.has(source) || !this.nodes.has(target)) {
+  addEdge(source, destination) {
+    if (!this.nodes.has(source) || !this.nodes.has(destination)) {
       throw new Error('Source or target node not found');
     }
 
-    const edge = new Edge(source, target);
+    const edge = new Edge(source, destination);
     this.edges.set(edge.id, edge);
 
-    const targetNode = this.nodes.get(target);
+    const targetNode = this.nodes.get(destination);
     const sourceNode = this.nodes.get(source);
     targetNode.parentId = source;
-    sourceNode.children.add(target);
-    this.rootNodes.delete(target);
-    this.updateSubtreeLevels(target);
+    sourceNode.children.add(destination);
+    this.rootNodes.delete(destination);
+    this.updateSubtreeLevels(destination);
 
     return edge;
   }

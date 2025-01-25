@@ -1,8 +1,8 @@
 export class Edge {
-  constructor(source, target) {
-    this.id = crypto.randomUUID();
+  constructor(source, destination) {
+    this.id = `${source}-${destination}`;
     this.source = source;
-    this.target = target;
+    this.target = destination;
   }
 
   toVisNetworkFormat() {

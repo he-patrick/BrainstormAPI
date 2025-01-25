@@ -1,25 +1,9 @@
 import { GraphManager } from './core/graph-manager.js';
 import { VisualizationManager } from './core/visualization.js';
-import { RelationType } from './core/types.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const graphManager = new GraphManager();
     
-    // Create root node
-    const rootNode = graphManager.addNode({
-        sessionId: 'demo-session',
-        label: 'Brainstorming Topic',
-        description: 'Central topic for the brainstorming session. Add child nodes to break down ideas and concepts.',
-        level: 0,
-        priority: 5,
-        messageIds: [],
-        metadata: {
-            created: new Date().toISOString(),
-            lastUpdated: new Date().toISOString(),
-            frequency: 1
-        }
-    });
-
     // Initialize visualization
     const container = document.getElementById('graph');
     if (!container) {
@@ -28,64 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const visualizationManager = new VisualizationManager(container, graphManager);
-    visualizationManager.updateVisualization();
-    visualizationManager.centerGraph();
-
-    // Add node button handler
-    const addNodeBtn = document.getElementById('addNodeBtn');
-    const nodeLabelInput = document.getElementById('nodeLabel');
-    const parentNodeSelect = document.getElementById('parentNode');
-
-    if (addNodeBtn && nodeLabelInput && parentNodeSelect) {
-        // Add root node to parent select
-        const option = document.createElement('option');
-        option.value = rootNode.id;
-        option.textContent = rootNode.label;
-        parentNodeSelect.appendChild(option);
-
-        addNodeBtn.addEventListener('click', () => {
-            const label = nodeLabelInput.value;
-            const description = document.getElementById('nodeDescription').value;
-            const parentId = parentNodeSelect.value;
-
-            if (!label) {
-                alert('Please enter a node label');
-                return;
-            }
-
-            if (!parentId) {
-                alert('Please select a parent node');
-                return;
-            }
-
-            const node = graphManager.addNode({
-                sessionId: 'demo-session',
-                label,
-                description,
-                level: 0,
-                priority: 3,
-                messageIds: [],
-                metadata: {
-                    created: new Date().toISOString(),
-                    lastUpdated: new Date().toISOString(),
-                    frequency: 1
-                }
-            });
-
-            graphManager.addEdge(parentId, node.id, RelationType.PARENT_CHILD, 1);
+    
+    // Expose method to construct graph from JSON
+    window.constructGraphFromJSON = (jsonData) => {
+        try {
+            graphManager.constructFromJSON(jsonData);
             visualizationManager.updateVisualization();
-            visualizationManager.animateNewNode(node.id);
-
-            const select = document.getElementById('parentNode');
-            if (select) {
-                const option = document.createElement('option');
-                option.value = node.id;
-                option.textContent = node.label;
-                select.appendChild(option);
-            }
-
-            nodeLabelInput.value = '';
-            document.getElementById('nodeDescription').value = '';
-        });
-    }
+            visualizationManager.centerGraph();
+        } catch (error) {
+            console.error('Error constructing graph:', error);
+            throw error;
+        }
+    };
 });
