@@ -3,7 +3,7 @@ import { GraphManager } from './graph-manager.js';
 export class VisualizationManager {
     constructor(container, graphManager) {
         this.graphManager = graphManager;
-        this.baseRadius = 150;
+        this.baseRadius = 200;
         
         const options = {
             nodes: {
@@ -45,7 +45,7 @@ export class VisualizationManager {
                     springLength: 100,
                     springConstant: 0.2,
                     damping: 0.3,
-                    avoidOverlap: 0.5
+                    avoidOverlap: 1.0
                 },
                 minVelocity: 0.1
             },

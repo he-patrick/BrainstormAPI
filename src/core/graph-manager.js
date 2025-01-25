@@ -1,5 +1,5 @@
-import { RelationType } from './types.js';
 import { Node } from './node.js';
+import { Edge } from './edge.js';
 
 export class GraphManager {
   constructor() {
@@ -52,30 +52,20 @@ export class GraphManager {
     return node;
   }
 
-  addEdge(source, target, type, strength) {
+  addEdge(source, target) {
     if (!this.nodes.has(source) || !this.nodes.has(target)) {
       throw new Error('Source or target node not found');
     }
 
-    const edge = {
-      id: uuidv4(),
-      sessionId: this.nodes.get(source).sessionId,
-      source,
-      target,
-      type,
-      strength
-    };
-
+    const edge = new Edge(source, target);
     this.edges.set(edge.id, edge);
 
-    if (type === RelationType.PARENT_CHILD) {
-      const targetNode = this.nodes.get(target);
-      const sourceNode = this.nodes.get(source);
-      targetNode.parentId = source;
-      sourceNode.children.add(target);
-      this.rootNodes.delete(target);
-      this.updateSubtreeLevels(target);
-    }
+    const targetNode = this.nodes.get(target);
+    const sourceNode = this.nodes.get(source);
+    targetNode.parentId = source;
+    sourceNode.children.add(target);
+    this.rootNodes.delete(target);
+    this.updateSubtreeLevels(target);
 
     return edge;
   }
@@ -90,7 +80,7 @@ export class GraphManager {
     }
 
     Array.from(this.edges.values())
-      .filter(edge => edge.source === nodeId && edge.type === RelationType.PARENT_CHILD)
+      .filter(edge => edge.source === nodeId)
       .forEach(edge => this.updateSubtreeLevels(edge.target));
   }
 
@@ -107,14 +97,9 @@ export class GraphManager {
       node.toVisNetworkFormat(this.getNodeColor(node.level))
     );
 
-    const edges = Array.from(this.edges.values()).map(edge => ({
-      id: edge.id,
-      from: edge.source,
-      to: edge.target,
-      width: edge.strength,
-      dashes: edge.type !== RelationType.PARENT_CHILD,
-      color: edge.type === RelationType.CONTRADICTS ? '#ff0000' : '#999999'
-    }));
+    const edges = Array.from(this.edges.values()).map(edge => 
+      edge.toVisNetworkFormat()
+    );
 
     return { nodes, edges };
   }
