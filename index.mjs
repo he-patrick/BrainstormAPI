@@ -1,22 +1,24 @@
-// index.mjs
 import { processMessages } from './openai.mjs';
 
 export const handler = async (event) => {
   try {
-    // Parse the incoming event body
-    const body = JSON.parse(event.body);
+    let body;
+
+    if (event.body) {
+      body = JSON.parse(event.body);
+    } else {
+      body = event;
+    }
+
     const userMessages = body.messages || [];
 
-    // Format messages for OpenAI API
     const messages = userMessages.map((message) => ({
       role: 'user',
       content: message.text,
     }));
 
-    // Process messages to get graph nodes
     const nodes = await processMessages(messages);
 
-    // Construct the response
     const response = {
       statusCode: 200,
       body: JSON.stringify({
