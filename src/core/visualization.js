@@ -40,7 +40,7 @@ export class VisualizationManager {
                     fit: true
                 },
                 barnesHut: {
-                    gravitationalConstant: -1000,
+                    gravitationalConstant: -2000,
                     centralGravity: 0.1,
                     springLength: 100,
                     springConstant: 0.2,
@@ -97,7 +97,7 @@ export class VisualizationManager {
 
         const parentPos = this.network.getPosition(parent.id);
         const parentAngle = Math.atan2(parentPos.y, parentPos.x);
-        return parentAngle + (Math.random() - 0.5) * Math.PI / 6;
+        return parentAngle + (Math.random() - 0.5) * Math.PI * 0.4;
     }
 
     updateNodeDetails(node) {
@@ -136,7 +136,9 @@ export class VisualizationManager {
                     }
                 });
             } else {
-                const radius = this.baseRadius * Math.pow(1.5, node.level - 1);
+                const siblings = this.graphManager.getAllNodes().filter(n => n.parentId === node.parentId);
+                const degreeMultiplier = Math.max(1, Math.log2(siblings.length) * 0.5);
+                const radius = this.baseRadius * Math.pow(1.5, node.level - 1) * degreeMultiplier;
                 const angle = this.calculateNodeAngle(node.id);
                 const x = radius * Math.cos(angle);
                 const y = radius * Math.sin(angle);
@@ -167,7 +169,9 @@ export class VisualizationManager {
 
         // Calculate final position
         const level = node.level;
-        const radius = this.baseRadius * Math.pow(1.5, level - 1);
+        const siblings = this.graphManager.getAllNodes().filter(n => n.parentId === node.parentId);
+        const degreeMultiplier = Math.max(1, Math.log2(siblings.length) * 0.5);
+        const radius = this.baseRadius * Math.pow(1.5, level - 1) * degreeMultiplier;
         const angle = this.calculateNodeAngle(nodeId);
         const finalX = radius * Math.cos(angle);
         const finalY = radius * Math.sin(angle);
