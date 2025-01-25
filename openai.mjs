@@ -42,12 +42,18 @@ Example output:
 {
   "nodes": [
     { "id": 1, "label": "Root Idea", "description": "Description of the root idea." },
-    { "id": 2, "label": "Idea 1", "description": "Description of idea 1." },
-    { "id": 3, "label": "Idea 2", "description": "Description of idea 2." }
+    { "id": 2, "label": "Idea 1", "description": "An idea that falls under the root idea." },
+    { "id": 3, "label": "Idea 2", "description": "An idea that falls under Idea 1." },
+    { "id": 4, "label": "Idea 3", "description": "An idea that falls under Idea 1." },
+    { "id": 5, "label": "Idea 4", "description": "An idea that falls under the root idea." },
+    { "id": 6, "label": "Idea 5", "description": "An idea that falls under Idea 3." }
   ],
   "edges": [
     { "source": 1, "destination": 2 },
-    { "source": 1, "destination": 3 }
+    { "source": 2, "destination": 3 },
+    { "source": 2, "destination": 4 },
+    { "source": 1, "destination": 5 },
+    { "source": 4, "destination": 6 }
   ]
 }
 \`\`\`
@@ -55,7 +61,7 @@ Example output:
 Ensure that:
 1. The IDs are sequential and unique.
 2. Every node except the root has at least one parent.
-3. Do not fabricate ideas that are not mentioned in the user messages.`,
+3. Read the messages and identify which ones should be grouped together under the same node. You should make edges that create this structure, were two siimilar ideas, such as an AI chat autocompleter and an AI messsage summarizer both fall under AI chat applications extensions for example`,
         },
         ...messages,
       ],
