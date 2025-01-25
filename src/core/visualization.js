@@ -112,8 +112,6 @@ export class VisualizationManager {
             <hr style="margin: 10px 0; border: none; border-top: 1px solid #eee;">
             <p><strong>Level:</strong> ${node.level}</p>
             <p><strong>Priority:</strong> ${node.priority}</p>
-            <p><strong>Frequency:</strong> ${node.metadata.frequency} mentions</p>
-            <p><strong>Created:</strong> ${new Date(node.metadata.created).toLocaleString()}</p>
         `;
     }
 

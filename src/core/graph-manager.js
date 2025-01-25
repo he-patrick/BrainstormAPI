@@ -1,4 +1,5 @@
 import { RelationType } from './types.js';
+import { Node } from './node.js';
 
 export class GraphManager {
   constructor() {
@@ -36,27 +37,19 @@ export class GraphManager {
     }
   }
 
-  addNode(node) {
-    const newNode = {
-      ...node,
-      id: uuidv4(),
-      metadata: {
-        created: new Date().toISOString(),
-        lastUpdated: new Date().toISOString(),
-        frequency: node.metadata?.frequency || 1
-      }
-    };
-
-    if (newNode.parentId) {
-      newNode.level = this.calculateLevel(newNode.id);
+  addNode(nodeData) {
+    const node = new Node(nodeData);
+    
+    if (node.parentId) {
+      node.level = this.calculateLevel(node.id);
     }
 
-    this.nodes.set(newNode.id, newNode);
-    if (!newNode.parentId) {
-      this.rootNodes.add(newNode.id);
+    this.nodes.set(node.id, node);
+    if (!node.parentId) {
+      this.rootNodes.add(node.id);
     }
 
-    return newNode;
+    return node;
   }
 
   addEdge(source, target, type, strength) {
@@ -70,11 +63,7 @@ export class GraphManager {
       source,
       target,
       type,
-      strength,
-      metadata: {
-        created: new Date().toISOString(),
-        lastUpdated: new Date().toISOString()
-      }
+      strength
     };
 
     this.edges.set(edge.id, edge);
@@ -112,13 +101,9 @@ export class GraphManager {
   }
 
   getVisNetworkData() {
-    const nodes = Array.from(this.nodes.values()).map(node => ({
-      id: node.id,
-      label: node.label,
-      level: node.level,
-      color: this.getNodeColor(node.level),
-      size: node.priority * 5
-    }));
+    const nodes = Array.from(this.nodes.values()).map(node => 
+      node.toVisNetworkFormat(this.getNodeColor(node.level))
+    );
 
     const edges = Array.from(this.edges.values()).map(edge => ({
       id: edge.id,
