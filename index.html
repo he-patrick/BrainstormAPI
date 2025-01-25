@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brainstorm Graph Visualization</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uuid@latest/dist/umd/uuidv4.min.js"></script>
+    <script type="module" src="src/main.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        #app {
+            display: flex;
+            height: 100%;
+        }
+        #graph {
+            flex-grow: 1;
+            border-right: 1px solid #ccc;
+            position: relative;
+            height: 100%;
+        }
+        #sidebar {
+            width: 300px;
+            padding: 20px;
+            background: #f5f5f5;
+            overflow-y: auto;
+        }
+        .node-details {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .node-details h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .node-details p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+        .legend-line {
+            width: 30px;
+            height: 2px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="graph">
+            <div class="legend">
+                <h4 style="margin: 0 0 10px 0">Legend</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50"></div>
+                    <span>High-level idea</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2196F3"></div>
+                    <span>Mid-level idea</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9C27B0"></div>
+                    <span>Detail/Implementation</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #999"></div>
+                    <span>Parent-Child</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #999; border-top: 2px dashed #999"></div>
+                    <span>Related/Supports</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #f44336"></div>
+                    <span>Contradicts</span>
+                </div>
+            </div>
+        </div>
+        <div id="sidebar">
+            <div class="node-details" id="nodeDetails">
+                <h3>Select a node to see details</h3>
+            </div>
+            <div class="controls" style="padding: 15px; background: white; border-radius: 8px; margin-top: 20px;">
+                <h3>Add New Node</h3>
+                <div style="margin-bottom: 10px;">
+                    <input type="text" id="nodeLabel" placeholder="Node Label" style="width: 100%; padding: 5px;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <textarea id="nodeDescription" placeholder="Node Description (optional)" style="width: 100%; padding: 5px; height: 60px; resize: vertical;"></textarea>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <select id="parentNode" style="width: 100%; padding: 5px;"></select>
+                </div>
+                <button id="addNodeBtn" style="width: 100%; padding: 8px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Add Node
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
