@@ -9,36 +9,53 @@ const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
 });
 
-export async function processMessages(messages) {
+export async function processMessages(rootIdea, messages) {
   try {
+    if (!rootIdea || typeof rootIdea !== 'string') {
+      throw new Error('Invalid input: "rootIdea" must be a non-empty string.');
+    }
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw new Error('Invalid input: "messages" must be a non-empty array.');
+    }
+
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Use 'gpt-4' or another appropriate model available to you
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: `You are an assistant helping to brainstorm ideas from user messages. For each distinct idea in the messages, please provide:
+          content: `The brainstorming session is centered around the root idea: "${rootIdea}". You are tasked with identifying distinct ideas derived from user messages and outputting them as nodes and edges for a graph structure. For each idea, include:
+          
+**Nodes**:
+- "id": A unique identifier for each node, starting with 1 for "${rootIdea}".
 - "label": A concise name for the idea.
 - "description": A brief explanation of the idea.
-- "connections": An array of labels of related ideas.
 
-Please output the result as a JSON array enclosed in triple backticks like so:
+**Edges**:
+- "source": The ID of the parent node.
+- "destination": The ID of the child node.
 
+Ensure all ideas are connected to "${rootIdea}" as the starting node. Output the result as a JSON object enclosed in triple backticks with two arrays: "nodes" and "edges".
+
+Example output:
 \`\`\`json
-[
-  {
-    "label": "Idea 1",
-    "description": "Description of idea 1.",
-    "connections": ["Idea 2", "Idea 3"]
-  },
-  {
-    "label": "Idea 2",
-    "description": "Description of idea 2.",
-    "connections": ["Idea 1"]
-  }
-]
+{
+  "nodes": [
+    { "id": 1, "label": "Root Idea", "description": "Description of the root idea." },
+    { "id": 2, "label": "Idea 1", "description": "Description of idea 1." },
+    { "id": 3, "label": "Idea 2", "description": "Description of idea 2." }
+  ],
+  "edges": [
+    { "source": 1, "destination": 2 },
+    { "source": 1, "destination": 3 }
+  ]
+}
 \`\`\`
 
-Do not include any additional text or explanation.`,
+Ensure that:
+1. The IDs are sequential and unique.
+2. Every node except the root has at least one parent.
+3. Do not fabricate ideas that are not mentioned in the user messages.`,
         },
         ...messages,
       ],
@@ -51,13 +68,19 @@ Do not include any additional text or explanation.`,
 
     if (jsonMatch && jsonMatch[1]) {
       const jsonString = jsonMatch[1];
-      const nodes = JSON.parse(jsonString);
-      return nodes;
+
+      try {
+        const graph = JSON.parse(jsonString);
+        console.log(graph);
+        return graph;
+      } catch (parseError) {
+        throw new Error(`JSON parsing failed: ${parseError.message}`);
+      }
     } else {
-      throw new Error('Failed to parse JSON from AI response.');
+      throw new Error('Failed to extract JSON from AI response.');
     }
   } catch (error) {
-    console.error('Error processing messages:', error);
+    console.error('Error processing messages:', error.message || error);
     throw error;
   }
 }
