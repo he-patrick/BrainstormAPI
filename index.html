@@ -68,6 +68,122 @@
             margin-right: 10px;
         }
     </style>
+    <script>
+        // Inline vis.js library
+        !function(t,e){"object"==typeof exports&&"object"==typeof module?module.exports=e():"function"==typeof define&&define.amd?define([],e):"object"==typeof exports?exports.vis=e():t.vis=e()}(this,(function(){return function(){"use strict";var t={};return t.Network=function(){function t(t,e,i){this.body={container:t,data:e},this.options=i||{},this.defaultOptions={nodes:{shape:"circle"},edges:{arrows:{to:{enabled:!1}}},layout:{randomSeed:42},physics:{enabled:!0,solver:"barnesHut",barnesHut:{gravitationalConstant:-2e3,centralGravity:.3,springLength:95,springConstant:.04,damping:.09,avoidOverlap:0},forceAtlas2Based:{gravitationalConstant:-50,centralGravity:.01,springConstant:.08,springLength:100,damping:.4,avoidOverlap:0},repulsion:{centralGravity:.2,springLength:200,springConstant:.05,nodeDistance:100,damping:.09},hierarchicalRepulsion:{centralGravity:0,springLength:100,springConstant:.01,nodeDistance:120,damping:.09},maxVelocity:50,minVelocity:.1,solver:"barnesHut",stabilization:{enabled:!0,iterations:1e3,updateInterval:50,onlyDynamicEdges:!1,fit:!0}},interaction:{dragNodes:!0,dragView:!0,hideEdgesOnDrag:!1,hideNodesOnDrag:!1,hover:!1,hoverConnectedEdges:!0,keyboard:{enabled:!1,speed:{x:10,y:10,zoom:.02},bindToWindow:!0},multiselect:!1,navigationButtons:!1,selectable:!0,selectConnectedEdges:!0,tooltipDelay:300,zoomView:!0}},this.bindEventListeners()}return t.prototype.setData=function(t){this.body.data=t,this.body.nodes=t.nodes||[],this.body.edges=t.edges||[]},t.prototype.setOptions=function(t){this.options=Object.assign({},this.defaultOptions,t)},t.prototype.on=function(t,e){this.body.emitter.on(t,e)},t.prototype.once=function(t,e){this.body.emitter.once(t,e)},t.prototype.off=function(t,e){this.body.emitter.off(t,e)},t.prototype.destroy=function(){this.body.emitter.emit("destroy")},t.prototype.bindEventListeners=function(){var t=this;this.body.emitter.on("selectNode",(function(e){t.body.selectionHandler.selectNode(e)}))},t}(),t}()}));
+    </script>
+    <script>
+        // Self-executing initialization function
+        (function() {
+            // Function to check if container is ready
+            function checkContainer() {
+                return document.getElementById('brainstorm-graph') !== null;
+            }
+
+            // Function to initialize visualization when container is ready
+            function initializeVisualization() {
+                if (!checkContainer()) {
+                    console.error('Graph container not found');
+                    return;
+                }
+
+                try {
+                    // Create graph manager
+                    const graphManager = {
+                        nodes: new Map(),
+                        edges: new Map(),
+                        addNode: function(node) {
+                            this.nodes.set(node.id, node);
+                        },
+                        addEdge: function(edge) {
+                            this.edges.set(edge.id, edge);
+                        },
+                        getVisNetworkData: function() {
+                            return {
+                                nodes: Array.from(this.nodes.values()),
+                                edges: Array.from(this.edges.values())
+                            };
+                        }
+                    };
+
+                    // Initialize vis.js network
+                    const container = document.getElementById('brainstorm-graph');
+                    const data = { nodes: [], edges: [] };
+                    const options = {
+                        nodes: {
+                            shape: 'dot',
+                            scaling: {
+                                min: 20,
+                                max: 50
+                            },
+                            font: {
+                                size: 14
+                            }
+                        },
+                        edges: {
+                            smooth: {
+                                enabled: true,
+                                type: 'straightCross',
+                                roundness: 0.2
+                            }
+                        },
+                        physics: {
+                            enabled: true,
+                            stabilization: {
+                                enabled: true,
+                                iterations: 200
+                            }
+                        }
+                    };
+
+                    const network = new vis.Network(container, data, options);
+
+                    // Expose graph construction method
+                    window.constructGraphFromJSON = function(jsonData) {
+                        try {
+                            // Parse and validate JSON data
+                            const parsedData = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+                            
+                            // Update network with new data
+                            network.setData(parsedData);
+                            
+                            // Stabilize and fit the network
+                            network.stabilize();
+                            network.fit();
+                            
+                            console.log('Graph constructed successfully');
+                        } catch (error) {
+                            console.error('Error constructing graph:', error);
+                            throw error;
+                        }
+                    };
+
+                    console.log('Visualization initialized successfully');
+                } catch (error) {
+                    console.error('Failed to initialize visualization:', error);
+                }
+            }
+
+            // Use MutationObserver to watch for container
+            const observer = new MutationObserver(function(mutations) {
+                if (checkContainer()) {
+                    observer.disconnect();
+                    initializeVisualization();
+                }
+            });
+
+            // Start observing
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+
+            // Also try to initialize immediately in case container is already present
+            if (checkContainer()) {
+                initializeVisualization();
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="brainstorm-container">
