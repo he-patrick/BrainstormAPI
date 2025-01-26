@@ -105,7 +105,7 @@ export class VisualizationManager {
     }
 
     updateNodeDetails(node) {
-        const detailsDiv = document.getElementById('nodeDetails');
+        const detailsDiv = document.getElementById('brainstorm-node-details');
         if (!detailsDiv) return;
 
         detailsDiv.innerHTML = `
@@ -120,7 +120,7 @@ export class VisualizationManager {
     }
 
     clearNodeDetails() {
-        const detailsDiv = document.getElementById('nodeDetails');
+        const detailsDiv = document.getElementById('brainstorm-node-details');
         if (detailsDiv) {
             detailsDiv.innerHTML = '<h3>Select a node to see details</h3>';
         }

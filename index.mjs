@@ -16,31 +16,59 @@ async function generateHtmlResponse(graphData) {
     const visualizationJs = await fs.readFile(path.join(__dirname, 'src/core/visualization.js'), 'utf-8');
     const mainJs = await fs.readFile(path.join(__dirname, 'src/main.js'), 'utf-8');
 
-    // Combine all modules into a single script with proper ordering
-    const inlineScripts = `
-      <script type="module">
-        // Define all modules in the global scope
-        ${typesJs}
+    // Create a script element and set its content
+    const scriptContent = [
+      '// Create a unique namespace for our code to avoid conflicts with React',
+      'window.BrainstormGraph = window.BrainstormGraph || {};',
+      '',
+      '// Define constants and types in our namespace',
+      'BrainstormGraph.RelationType = {',
+      '  PARENT_CHILD: "parent_child",',
+      '  RELATED: "related",',
+      '  SUPPORTS: "supports",',
+      '  CONTRADICTS: "contradicts"',
+      '};',
+      '',
+      '// Define classes in our namespace',
+      nodeJs.replace(/export class Node/, 'BrainstormGraph.Node = class Node'),
+      '',
+      edgeJs.replace(/export class Edge/, 'BrainstormGraph.Edge = class Edge'),
+      '',
+      graphManagerJs
+        .replace(/import [^;]+;/g, '')
+        .replace(/export class GraphManager/, 'BrainstormGraph.GraphManager = class GraphManager')
+        .replace(/new Node/g, 'new BrainstormGraph.Node')
+        .replace(/new Edge/g, 'new BrainstormGraph.Edge'),
+      '',
+      visualizationJs
+        .replace(/import [^;]+;/g, '')
+        .replace(/export class VisualizationManager/, 'BrainstormGraph.VisualizationManager = class VisualizationManager')
+        .replace(/new GraphManager/g, 'new BrainstormGraph.GraphManager'),
+      '',
+      '// Initialize visualization when the container is ready',
+      'const initBrainstormGraph = () => {',
+      '  const container = document.getElementById("brainstorm-graph");',
+      '  if (!container) {',
+      '    // If container isn\'t ready, try again in a moment',
+      '    setTimeout(initBrainstormGraph, 100);',
+      '    return;',
+      '  }',
+      '',
+      '  const graphManager = new BrainstormGraph.GraphManager();',
+      '  const visualizationManager = new BrainstormGraph.VisualizationManager(container, graphManager);',
+      '',
+      '  // Initialize with the provided data',
+      `  const graphData = ${JSON.stringify(graphData)};`,
+      '  graphManager.constructFromJSON(graphData);',
+      '  visualizationManager.updateVisualization();',
+      '  visualizationManager.centerGraph();',
+      '};',
+      '',
+      '// Start initialization',
+      'initBrainstormGraph();'
+    ].join('\n');
 
-        // Node and Edge have no dependencies
-        ${nodeJs}
-        ${edgeJs}
-
-        // GraphManager depends on Node and Edge
-        ${graphManagerJs}
-
-        // VisualizationManager depends on GraphManager
-        ${visualizationJs}
-
-        // Main depends on GraphManager and VisualizationManager
-        ${mainJs}
-
-        // Initialize graph with data
-        document.addEventListener('DOMContentLoaded', () => {
-          const graphData = ${JSON.stringify(graphData)};
-          window.constructGraphFromJSON(graphData);
-        });
-      </script>
+    const inlineScripts = `<script>${scriptContent}</script>
     `;
 
     // Replace the module script tags with our inline versions
