@@ -1,5 +1,10 @@
-import { Node } from './node.js';
-import { Edge } from './edge.js';
+// Make dependencies globally available
+const { Node } = await import('./node.js');
+const { Edge } = await import('./edge.js');
+
+// Export to global scope
+window.Node = Node;
+window.Edge = Edge;
 
 export class GraphManager {
   constructor() {

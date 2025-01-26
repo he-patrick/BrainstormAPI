@@ -1,5 +1,10 @@
-import { GraphManager } from './core/graph-manager.js';
-import { VisualizationManager } from './core/visualization.js';
+// Make classes globally available since we're using inline scripts
+const { GraphManager } = await import('./core/graph-manager.js');
+const { VisualizationManager } = await import('./core/visualization.js');
+
+// Export classes to global scope
+window.GraphManager = GraphManager;
+window.VisualizationManager = VisualizationManager;
 
 document.addEventListener('DOMContentLoaded', () => {
     const graphManager = new GraphManager();

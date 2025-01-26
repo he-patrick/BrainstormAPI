@@ -1,4 +1,59 @@
 import { processMessages } from './openai.mjs';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+async function generateHtmlResponse(graphData) {
+  try {
+    // Read all necessary files
+    const htmlTemplate = await fs.readFile(path.join(__dirname, 'index.html'), 'utf-8');
+    const typesJs = await fs.readFile(path.join(__dirname, 'src/core/types.js'), 'utf-8');
+    const nodeJs = await fs.readFile(path.join(__dirname, 'src/core/node.js'), 'utf-8');
+    const edgeJs = await fs.readFile(path.join(__dirname, 'src/core/edge.js'), 'utf-8');
+    const graphManagerJs = await fs.readFile(path.join(__dirname, 'src/core/graph-manager.js'), 'utf-8');
+    const visualizationJs = await fs.readFile(path.join(__dirname, 'src/core/visualization.js'), 'utf-8');
+    const mainJs = await fs.readFile(path.join(__dirname, 'src/main.js'), 'utf-8');
+
+    // Combine all modules into a single script with proper ordering
+    const inlineScripts = `
+      <script type="module">
+        // Define all modules in the global scope
+        ${typesJs}
+
+        // Node and Edge have no dependencies
+        ${nodeJs}
+        ${edgeJs}
+
+        // GraphManager depends on Node and Edge
+        ${graphManagerJs}
+
+        // VisualizationManager depends on GraphManager
+        ${visualizationJs}
+
+        // Main depends on GraphManager and VisualizationManager
+        ${mainJs}
+
+        // Initialize graph with data
+        document.addEventListener('DOMContentLoaded', () => {
+          const graphData = ${JSON.stringify(graphData)};
+          window.constructGraphFromJSON(graphData);
+        });
+      </script>
+    `;
+
+    // Replace the module script tags with our inline versions
+    let modifiedHtml = htmlTemplate;
+    modifiedHtml = modifiedHtml.replace(/<script type="module"[^>]*>[^<]*<\/script>/g, '');
+    modifiedHtml = modifiedHtml.replace('</body>', `${inlineScripts}</body>`);
+
+    return modifiedHtml;
+  } catch (error) {
+    console.error('Error generating HTML:', error);
+    throw error;
+  }
+}
 
 export const handler = async (event) => {
   try {
@@ -18,19 +73,17 @@ export const handler = async (event) => {
       content: message.text,
     }));
 
-    const nodes = await processMessages(rootIdea, messages);
+    const graphData = await processMessages(rootIdea, messages);
+    const htmlContent = await generateHtmlResponse(graphData);
 
     const response = {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*', // Adjust this to your needs
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
-        // Include other headers if necessary
       },
-      body: JSON.stringify({
-        status: 'success',
-        data: nodes,
-      }),
+      body: htmlContent,
     };
 
     return response;
@@ -39,13 +92,18 @@ export const handler = async (event) => {
     return {
       statusCode: 500,
       headers: {
-        'Access-Control-Allow-Origin': '*', // Ensure headers are included in error responses too
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
       },
-      body: JSON.stringify({
-        status: 'error',
-        message: error.message || 'Internal Server Error',
-      }),
+      body: `
+        <html>
+          <body>
+            <h1>Error</h1>
+            <p>${error.message || 'Internal Server Error'}</p>
+          </body>
+        </html>
+      `,
     };
   }
 };

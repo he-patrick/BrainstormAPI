@@ -1,4 +1,8 @@
-import { GraphManager } from './graph-manager.js';
+// Make dependencies globally available
+const { GraphManager } = await import('./graph-manager.js');
+
+// Export to global scope
+window.GraphManager = GraphManager;
 
 export class VisualizationManager {
     constructor(container, graphManager) {
