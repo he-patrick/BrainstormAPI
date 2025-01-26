@@ -68,7 +68,7 @@ async function generateHtmlResponse(graphData) {
       'initBrainstormGraph();'
     ].join('\n');
 
-    const inlineScripts = `<script>${scriptContent}</script>
+    const inlineScripts = `<script nonce="abc">${scriptContent}</script>
     `;
 
     // Replace the module script tags with our inline versions
