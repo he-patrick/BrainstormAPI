@@ -80,4 +80,4 @@ The API returns a complete HTML page containing:
 
 ## License
 
-MIT License
+Apache License 2.0
