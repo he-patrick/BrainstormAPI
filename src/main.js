@@ -13,6 +13,7 @@ function loadVis() {
 
         const script = document.createElement('script');
         script.src = 'https://unpkg.com/vis-network/standalone/umd/vis-network.min.js';
+        script.nonce ="abc"
         script.onload = resolve;
         script.onerror = () => reject(new Error('Failed to load vis.js'));
         document.head.appendChild(script);
