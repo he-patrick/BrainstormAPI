@@ -93,6 +93,8 @@ export class GraphManager {
     if (!node.parentId) {
       this.rootNodes.add(node.id);
     }
+
+    console.log("Created node: %s", node.id);
     return node;
   }
 
@@ -110,6 +112,8 @@ export class GraphManager {
     sourceNode.children.add(destination);
     this.rootNodes.delete(destination);
     this.updateSubtreeLevels(destination);
+
+    console.log("Added edge: %s", edge.id);
 
     return edge;
   }
